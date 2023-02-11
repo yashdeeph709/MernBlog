@@ -6,9 +6,12 @@ const {
   fetchPostController,
   updatePostController,
   deletePostController,
+  toggleLikeController,
+  toggleDislikeController,
 } = require("../../controllers/posts/PostController");
 const {
   photoUpload,
+  photoResize,
   postImageResize,
 } = require("../../middlewares/uploads/photoUpload");
 const postRoutes = express.Router();
@@ -30,5 +33,7 @@ postRoutes.put(
   updatePostController
 );
 postRoutes.delete("/:id", authMiddleware, deletePostController);
+postRoutes.put("/likes/:postId", authMiddleware, toggleLikeController);
+postRoutes.put("/dislikes/:postId", authMiddleware, toggleDislikeController);
 
 module.exports = postRoutes;

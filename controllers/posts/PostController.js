@@ -28,7 +28,8 @@ const createPostController = expressAsyncHandler(async (req, res) => {
     }
   } catch (e) {
     console.error(
-      "PostController.createPostController() => error: " + e.message
+      "PostController.createPostController() => error: " + e.message,
+      e.stack
     );
     res.status(500).json({ message: e.message });
   }
@@ -92,10 +93,45 @@ const deletePostController = expressAsyncHandler(async (req, res) => {
   }
 });
 
+// Likes
+const toggleLikeController = expressAsyncHandler(async (req, res) => {
+  try {
+    const { postId } = req.params;
+    validateUUID(postId);
+    const post = await PostDao.likesById({
+      userId: req.user.id,
+      postId: postId,
+    });
+    res.status(200).json(post);
+  } catch (err) {
+    console.error(`PostController.toggleLikeController error: ${err.message}`);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+const toggleDislikeController = expressAsyncHandler(async (req, res) => {
+  try {
+    const { postId } = req.params;
+    validateUUID(postId);
+    const post = await PostDao.dislikesById({
+      userId: req.user.id,
+      postId: postId,
+    });
+    res.status(200).json(post);
+  } catch (err) {
+    console.error(
+      `PostController.toggleDislikeController error: ${err.message}`
+    );
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = {
   createPostController,
   fetchPostsController,
   fetchPostController,
   updatePostController,
   deletePostController,
+  toggleLikeController,
+  toggleDislikeController,
 };

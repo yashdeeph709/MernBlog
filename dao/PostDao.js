@@ -40,9 +40,68 @@ const findByIdAndUpdate = async (id, body) => {
   );
   return post;
 };
-const deleteById = (id) => {
-  Post.destroy({ where: { id } });
+const deleteById = async (id) => {
+  await Post.destroy({ where: { id } });
 };
+
+const likesById = async ({ userId, postId }) => {
+  const post = await Post.findOne({ where: { id: postId } });
+  // If disliked post
+  if (post.dislikes && post.dislikes.values) {
+    const index = post.dislikes.values.findIndex(
+      (like) => like.userId === userId
+    );
+    if (index !== -1) {
+      console.log(
+        `dislike found will be reverting the dislike for post ${postId}`
+      );
+      post.dislikes.values = post.dislikes.values.filter(
+        (like) => like.userId !== userId
+      );
+      await post.save();
+    }
+  }
+  if (!post.likes) {
+    post.likes = {};
+    post.likes.values = [];
+  }
+  const index = post.likes.values.findIndex((like) => like.userId === userId);
+  if (index === -1) {
+    post.likes.values.push({ userId });
+  }
+  await post.save();
+  return post;
+};
+
+const dislikesById = async ({ userId, postId }) => {
+  const post = await Post.findOne({ where: { id: postId } });
+  // If disliked post
+  if (post.likes && post.likes.values) {
+    const index = post.likes.values.findIndex((like) => like.userId === userId);
+    if (index !== -1) {
+      console.log(
+        `like found will be reverting the dislike for post ${postId}`
+      );
+      post.likes.values = post.likes.values.filter(
+        (like) => like.userId !== userId
+      );
+      await post.save();
+    }
+  }
+  if (!post.dislikes) {
+    post.dislikes = {};
+    post.dislikes.values = [];
+  }
+  const index = post.dislikes.values.findIndex(
+    (dislike) => dislike.userId === userId
+  );
+  if (index === -1) {
+    post.dislikes.values.push({ userId });
+  }
+  await post.save();
+  return post;
+};
+
 module.exports = {
   createPost,
   findAllPosts,
@@ -50,4 +109,6 @@ module.exports = {
   incrementPostViews,
   findByIdAndUpdate,
   deleteById,
+  likesById,
+  dislikesById,
 };
